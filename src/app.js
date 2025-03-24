@@ -12,14 +12,29 @@ const app = express();
 app.use(morgan('dev'));
 app.use(helmet());
 app.use(compression());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // init db
-checkOverload()
+// checkOverload()
 
 // init routes
 app.use('/', require('./routes'));
 
 // handling error
+app.use((req, res, next) => {
+    const error = new Error('Not Found');
+    error.status = 404;
+    next(error);
+})
 
+app.use((error, req, res, next) => {
+    const statusCode = error.status || 500;
+    res.status(statusCode).json({
+        status: 'error',
+        code: statusCode,
+        message: error.message || 'Internal Server Error'
+    })
+})
 
 module.exports = app;
