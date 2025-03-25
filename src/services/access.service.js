@@ -6,7 +6,8 @@ const crypto = require('node:crypto');
 const KeyTokenService = require('./keyToken.service');
 const { createTokenPair } = require('../auth/authUtils');
 const { getInfoData } = require('../utils');
-const { BadRequestError } = require('../core/error.response');
+const { BadRequestError, AuthFailureError } = require('../core/error.response');
+const { findByEmail } = require('./shop.service');
 
 const RoleShop = {
     SHOP: 'SHOP',
@@ -16,6 +17,60 @@ const RoleShop = {
 }
 
 class AccessService {
+
+    static logout = async ({ keyStore }) => {
+        const delKey = await KeyTokenService.removeKeyById(keyStore._id);
+        console.log({ delKey });
+        return delKey;
+    }
+
+    /**
+     * 1 - check email in dbs
+     * 2 - match password
+     * 3 - create AT vs RT and save
+     * 4 - generate tokens
+     * 5 - get data return login
+     */
+    static login = async ({ email, password, refreshToken = null }) => {
+        // 1.
+        const foundShop = await findByEmail({ email });
+        if (!foundShop) {
+            throw new BadRequestError('Error: Shop not found');
+        }
+
+        // 2.
+        const isMatch = await bcrypt.compare(password, foundShop.password);
+        if (!isMatch) {
+            throw new AuthFailureError('Authentication failure');
+        }
+
+        // 3.
+        // create privateKey, publicKey
+        const privateKey = crypto.randomBytes(64).toString('hex');
+        const publicKey = crypto.randomBytes(64).toString('hex');
+
+        // 4. generate tokens
+        const { _id: userId } = foundShop;
+        const tokens = await createTokenPair(
+            { userId, email },
+            publicKey,
+            privateKey
+        )
+
+        await KeyTokenService.createKeyToken({
+            userId,
+            publicKey,
+            privateKey,
+            refreshToken: tokens.refreshToken
+        })
+        return {
+            shop: getInfoData({
+                fields: ['_id', 'name', 'email'],
+                object: foundShop
+            }),
+            tokens
+        }
+    }
 
     static signUp = async ({ name, email, password }) => {
         // step1: check email exist?
@@ -74,14 +129,11 @@ class AccessService {
             console.log('Created Token Success::', tokens);
 
             return {
-                code: 201,
-                metadata: {
-                    shop: getInfoData({
-                        fields: ['_id', 'name', 'email'],
-                        object: newShop
-                    }),
-                    tokens
-                }
+                shop: getInfoData({
+                    fields: ['_id', 'name', 'email'],
+                    object: newShop
+                }),
+                tokens
             }
 
             //const tokens = await 
