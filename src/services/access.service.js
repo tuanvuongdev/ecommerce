@@ -8,7 +8,6 @@ const { createTokenPair, verifyJWT } = require('../auth/authUtils');
 const { getInfoData } = require('../utils');
 const { BadRequestError, AuthFailureError, ForbiddenError } = require('../core/error.response');
 const { findByEmail } = require('./shop.service');
-const keytokenModel = require('../models/keytoken.model');
 
 const RoleShop = {
     SHOP: 'SHOP',
@@ -18,6 +17,47 @@ const RoleShop = {
 }
 
 class AccessService {
+
+    /**
+     *  check this token used?
+     */
+    static handlerRefreshTokenV2 = async ({ refreshToken, user, keyStore }) => {
+
+        const { userId, email } = user;
+
+        if (keyStore.refreshTokensUsed.includes(refreshToken)) {
+            await KeyTokenService.removeKeyById(foundToken._id);
+            throw new ForbiddenError('Something wrong happened !! Pls relogin');
+        }
+
+        // so sanh refreshToken hop le trong dbs voi refreshToken trong request
+        if (keyStore.refreshToken !== refreshToken) throw new AuthFailureError('Shop not registered');
+
+        const foundShop = await findByEmail({ email });
+        if (!foundShop) throw new AuthFailureError('Shop not registered');
+
+        // create 1 cap moi
+        const tokens = await createTokenPair(
+            { userId, email },
+            keyStore.publicKey,
+            keyStore.privateKey
+        )
+
+        // update token
+        await keyStore.updateOne({
+            $set: {
+                refreshToken: tokens.refreshToken
+            },
+            $addToSet: {
+                refreshTokensUsed: refreshToken // da duoc su dung de lay token moi
+            }
+        })
+
+        return {
+            user,
+            tokens
+        }
+    }
 
     /**
      *  check this token used?
@@ -81,6 +121,8 @@ class AccessService {
      * 3 - create AT vs RT and save
      * 4 - generate tokens
      * 5 - get data return login
+     * 
+     * Nhận thêm refresh token để khi người dùng đăng nhập lại thì Fe vẫn truyền thêm refresh token để BE thêm vào blacklist (refreshTokenUsed)
      */
     static login = async ({ email, password, refreshToken = null }) => {
         // 1.

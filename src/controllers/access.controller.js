@@ -12,6 +12,19 @@ class AccessController {
         }).send(res);
     }
 
+    handleRefreshTokenV2 = async (req, res, next) => {
+
+        // v2 fixed, no need accessToken
+        new SuccessResponse({
+            message: 'Get new token success!',
+            metadata: await AccessService.handlerRefreshTokenV2({
+                refreshToken: req.refreshToken,
+                user: req.user,
+                keyStore: req.keyStore
+            })
+        }).send(res);
+    }
+
     logout = async (req, res, next) => {
         new SuccessResponse({
             message: 'Logout success!',
