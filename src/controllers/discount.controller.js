@@ -29,7 +29,6 @@ class DiscountController {
       message: "Successful Code found",
       metadata: await DiscountService.getDiscountAmount({
         ...req.body,
-        shopId: req.user.userId,
       }),
     }).send(res);
   };

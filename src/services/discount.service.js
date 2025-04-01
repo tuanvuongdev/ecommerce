@@ -188,6 +188,9 @@ class DiscountService {
       discount_minOrderValue,
       discount_usersUsed,
       discount_maxUsesPerUser,
+      discount_type,
+      discount_value,
+      discount_maxValue
     } = foundDiscount;
 
     if (!discount_isActive) throw new NotFoundError(`Discount expired`);
@@ -223,15 +226,19 @@ class DiscountService {
     }
 
     // check xem discount nay la fixed_amount || percentage
-    const amount =
+    let amount =
       discount_type === "fixed_amount"
         ? discount_value
         : totalOrder * (discount_value / 100);
 
+    if (amount > discount_maxValue) amount = discount_maxValue;
+
+    let total = totalOrder - amount > 0 ? totalOrder - amount : 0;
+
     return {
       totalOrder,
       discount: amount,
-      totalPrice: totalOrder - amount,
+      totalPrice: total,
     };
   }
 
