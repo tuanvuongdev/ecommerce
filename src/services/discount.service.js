@@ -190,7 +190,7 @@ class DiscountService {
       discount_maxUsesPerUser,
       discount_type,
       discount_value,
-      discount_maxValue
+      discount_maxValue,
     } = foundDiscount;
 
     if (!discount_isActive) throw new NotFoundError(`Discount expired`);

@@ -6,7 +6,8 @@ const {
   db: { host, name, port },
 } = require("../configs/config.mongodb");
 
-const connectString = process.env.MONGODB_URI || `mongodb://${host}:${port}/${name}`;
+const connectString =
+  process.env.MONGODB_URI || `mongodb://${host}:${port}/${name}`;
 
 class Database {
   constructor() {
@@ -27,7 +28,7 @@ class Database {
       .then((_) => {
         console.log("Connected Mongodb Success pro", countConnect());
       })
-      .catch((err) => console.log("Error Connect!"));
+      .catch((err) => console.log("Error Connect!::", err));
   }
 
   static getInstance() {
