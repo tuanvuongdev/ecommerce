@@ -53,11 +53,11 @@ class CheckoutService {
     if (!foundCart) throw new BadRequestError("Cart does not exist!");
 
     const checkoutOrder = {
-      totalPrice: 0, // tong tien hang
-      feeShip: 0,
-      totalDiscount: 0, // tong tien discount
-      totalCheckout: 0,
-    },
+        totalPrice: 0, // tong tien hang
+        feeShip: 0,
+        totalDiscount: 0, // tong tien discount
+        totalCheckout: 0,
+      },
       shopOrderIdsNew = [];
 
     // tinh tong tien bill
@@ -69,7 +69,7 @@ class CheckoutService {
 
       // tong tien don hang
       const checkoutPrice = checkProductServer.reduce((acc, product) => {
-        return acc + (product.quantity * product.price);
+        return acc + product.quantity * product.price;
       }, 0);
 
       // tong tien truoc khi xu ly
@@ -119,29 +119,33 @@ class CheckoutService {
     cartId,
     userId,
     userAddress = {},
-    userPayment = {}
+    userPayment = {},
   }) {
-    const { shopOrderIdsNew, checkoutOrder } = await this.checkoutReview({ userId, cartId, shopOrderIds })
+    const { shopOrderIdsNew, checkoutOrder } = await this.checkoutReview({
+      userId,
+      cartId,
+      shopOrderIds,
+    });
 
     // check lai mot lan nua xem vuot ton kho hay khong
     // get new array Products
-    const products = shopOrderIdsNew.flatMap(order => order.itemProducts)
+    const products = shopOrderIdsNew.flatMap((order) => order.itemProducts);
 
-    const acquireProduct = []
+    const acquireProduct = [];
 
     for (let i = 0; i < products.length; i++) {
-      const { productId, quantity } = products[i]
+      const { productId, quantity } = products[i];
 
-      const keyLock = await acquireLock(productId, quantity, cartId)
-      acquireProduct.push(!!keyLock)
+      const keyLock = await acquireLock(productId, quantity, cartId);
+      acquireProduct.push(!!keyLock);
       if (keyLock) {
-        await releaseLock(keyLock)
+        await releaseLock(keyLock);
       }
     }
 
     // check co 1 san pham het hang trong kho
     if (acquireProduct.includes(false)) {
-      throw new BadRequestError("Some products have been out of stock")
+      throw new BadRequestError("Some products have been out of stock");
     }
 
     const newOrder = await order.create({
@@ -149,16 +153,35 @@ class CheckoutService {
       order_checkout: checkoutOrder,
       order_shipping: userAddress,
       order_payment: userPayment,
-      order_products: shopOrderIdsNew
-    })
+      order_products: shopOrderIdsNew,
+    });
 
     // truong hop: neu insert thanh cong, thi remove product co trong cart
     if (newOrder) {
-
     }
 
     return newOrder;
   }
+
+  /*
+    1> Query Orders [Users]
+  */
+  static async getOrderByUser() {}
+
+  /*
+    1> Query Order Using Id [Users]
+  */
+  static async getOneOrderByUser() {}
+
+  /*
+    1> Cancel Order [Users]
+  */
+  static async cancelOrderByUser() {}
+
+  /*
+    1> Update Order Status [Shop | Admin]
+  */
+  static async updateOrderStatusByShop() {}
 }
 
 module.exports = CheckoutService;
