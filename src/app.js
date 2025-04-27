@@ -3,7 +3,9 @@ const morgan = require('morgan');
 const { default: helmet } = require('helmet');
 const compression = require('compression');
 const { checkOverload } = require('./helpers/check.connect');
+
 require('./dbs/init.mongodb');
+
 require('dotenv').config();
 
 const app = express();
@@ -15,8 +17,10 @@ app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// init db
-// checkOverload()
+// test pub.sub redis
+// require('./tests/inventory.test')
+// const productTest = require('./tests/product.test')
+// productTest.purchaseProduct('product:001', 10)
 
 // init routes
 app.use('/', require('./routes'));
