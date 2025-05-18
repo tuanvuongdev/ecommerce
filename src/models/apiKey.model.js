@@ -11,6 +11,16 @@ var apiKeySchema = new Schema({
         type: String,
         required: true,
         unique: true,
+        maxLength: 1024,
+        trim: true,
+    },
+    version: {
+        type: String,
+        required: true,
+    },
+    description: {
+        type: String,
+        required: true,
     },
     status: {
         type: Boolean,

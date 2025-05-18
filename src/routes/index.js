@@ -3,8 +3,10 @@
 const express = require("express");
 const { apiKey, permission } = require("../auth/checkAuth");
 const { pushToLogDiscord } = require("../middlewares");
+const sanitizeMiddleware = require("../middlewares/sanitize.middleware");
 const router = express.Router();
 
+router.use(sanitizeMiddleware);
 // add log to discord
 router.use(pushToLogDiscord);
 // check apiKey

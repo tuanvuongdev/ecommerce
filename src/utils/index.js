@@ -55,10 +55,16 @@ const updateNestedObjectParser = (obj) => {
   return final;
 };
 
+const HEADER = {
+  API_KEY: 'x-api-key',
+  AUTHORIZATION: 'authorization'
+}
+
 module.exports = {
   getInfoData,
   getSelectData,
   getUnSelectData,
   removeUndefinedObject,
   updateNestedObjectParser,
+  HEADER,
 };
