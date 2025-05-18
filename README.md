@@ -58,7 +58,7 @@ A robust and scalable e-commerce API built with Node.js, Express, and MongoDB, f
 1. Clone the repository:
 
    ```bash
-   git clone [repository-url]
+   git clone https://github.com/tuanvuongdev/ecommerce.git
    cd ecommerce
    ```
 
