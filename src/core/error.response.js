@@ -64,6 +64,15 @@ class ForbiddenError extends ErrorResponse {
   }
 }
 
+class PermissionError extends ErrorResponse {
+  constructor(
+    message = ReasonPhrases.FORBIDDEN,
+    statusCode = StatusCodes.FORBIDDEN
+  ) {
+    super(message, statusCode);
+  }
+}
+
 // error redis
 class RedisError extends ErrorResponse {
   constructor(
@@ -80,5 +89,6 @@ module.exports = {
   AuthFailureError,
   NotFoundError,
   ForbiddenError,
-  RedisError
+  RedisError,
+  PermissionError,
 };
